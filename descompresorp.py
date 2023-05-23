@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from timeit import Timer
 from typing import Callable
 from constants import REF_BYTE_LENGTH, WINDOW_SIZE, CHUNK_SIZE
-from mpi_globals import RANK
+from mpi_globals import CLUSTER_SIZE, RANK
 from process import Root, Worker
 from descompresor import process_chunk
 from mpi4py import MPI
@@ -53,10 +53,10 @@ if __name__ == "__main__":
     
     parser.add_argument("zipfile", help="Nombre del archivo a descomprimir")
     parser.add_argument("-o", "--outfile", help="Nombre del archivo descomprimido", default="descomprimidop-elmejorprofesor.txt")
-    parser.add_argument("-c", "--chunk-size", help="Tamaño de las partes en las cuales se dividirá el archivo de entrada", type=int, default=CHUNK_SIZE) 
 
     args = parser.parse_args()
-    zipfile, outfile, chunk_size = args.zipfile, args.outfile, args.chunk_size
+    zipfile, outfile = args.zipfile, args.outfile
+    chunk_size = os.stat(zipfile).st_size // CLUSTER_SIZE
     chunk_size = chunk_size + REF_BYTE_LENGTH - chunk_size % REF_BYTE_LENGTH
 
     window = MPI.Win.Allocate_shared(WINDOW_SIZE, 1, comm=CHANNEL) 
